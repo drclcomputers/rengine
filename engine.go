@@ -74,7 +74,8 @@ func (e *Engine) SetPlayer(posX, posY, dirX, dirY, planeX, planeY, moveSpeed, ro
 }
 
 // Sets up GLFW, OpenGL, and creates the window
-func (e *Engine) Initialize(fullscreen bool) error {	
+func (e *Engine) Initialize(fullscreen bool) error {
+	// Init GLFW
 	if err := glfw.Init(); err != nil {
 		return fmt.Errorf("failed to initialize glfw: %v", err)
 	}
