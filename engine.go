@@ -74,17 +74,7 @@ func (e *Engine) SetPlayer(posX, posY, dirX, dirY, planeX, planeY, moveSpeed, ro
 }
 
 // Sets up GLFW, OpenGL, and creates the window
-func (e *Engine) Initialize(fullscreen bool) error {
-	if len(e.Textures) == 0 {
-		return fmt.Errorf("at least one wall texture must be loaded before initializing")
-	}
-	if e.FloorTexture == nil {
-		return fmt.Errorf("floor texture must be loaded before initializing")
-	}
-	if e.CeilingTexture == nil {
-		return fmt.Errorf("ceiling texture must be loaded before initializing")
-	}
-
+func (e *Engine) Initialize(fullscreen bool) error {	
 	if err := glfw.Init(); err != nil {
 		return fmt.Errorf("failed to initialize glfw: %v", err)
 	}
