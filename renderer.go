@@ -9,11 +9,17 @@ import (
 
 // Performs raycasting and renders the scene
 func (e *Engine) Render() {
+	if e.FloorTexture == nil || e.CeilingTexture == nil {
+		return
+	}
+
 	e.clearBuffer()
 
 	for x := 0; x < e.ScreenWidth; x++ {
 		e.castRay(x)
 	}
+
+	e.RenderDebugOverlay()
 }
 
 // Clears the framebuffer with ceiling and floor colors
@@ -23,7 +29,6 @@ func (e *Engine) clearBuffer() {
 			idx := (y*e.ScreenWidth + x) * 4
 			
 			if y < e.ScreenHeight/2 {
-				// Ceiling - use ceiling texture
 				texX := (x * e.CeilingTexture.Width) / e.ScreenWidth
 				texY := (y * e.CeilingTexture.Height) / (e.ScreenHeight / 2)
 				r, g, b := e.CeilingTexture.GetPixel(texX, texY)
@@ -32,7 +37,6 @@ func (e *Engine) clearBuffer() {
 				e.FrameBuffer[idx+2] = b
 				e.FrameBuffer[idx+3] = 255
 			} else {
-				// Floor - use floor texture
 				texX := (x * e.FloorTexture.Width) / e.ScreenWidth
 				texY := ((y - e.ScreenHeight/2) * e.FloorTexture.Height) / (e.ScreenHeight / 2)
 				r, g, b := e.FloorTexture.GetPixel(texX, texY)

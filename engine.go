@@ -26,6 +26,7 @@ type Engine struct {
 	ScreenTexture uint32
 	Running       bool
 	SprintMultiplier float64
+	DebugInfo        *DebugInfo
 }
 
 type Player struct {
@@ -146,6 +147,10 @@ func (e *Engine) keyCallback(w *glfw.Window, key glfw.Key, scancode int, action 
 	switch action {
 	case glfw.Press:
 		e.KeyState[key] = true
+
+		if key == glfw.KeyF3 {
+			e.ToggleDebug()
+		}
 	case glfw.Release:
 		e.KeyState[key] = false
 	}
