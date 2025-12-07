@@ -1,5 +1,5 @@
 // engine.go - Core engine structure and initialization
-package engine
+package rengine
 
 import (
 	"fmt"

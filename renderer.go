@@ -1,5 +1,5 @@
 // renderer.go - Raycasting renderer
-package engine
+package rengine
 
 import (
 	"math"

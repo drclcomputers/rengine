@@ -1,5 +1,5 @@
 // texture.go - Texture loading and management
-package engine
+package rengine
 
 import (
 	"fmt"

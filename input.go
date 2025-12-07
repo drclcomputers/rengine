@@ -1,5 +1,5 @@
 // input.go - Input handling
-package engine
+package rengine
 
 import (
 	"math"

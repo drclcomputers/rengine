@@ -1,4 +1,4 @@
-module engine
+module rengine
 
 go 1.24.2
 
