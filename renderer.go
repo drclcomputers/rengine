@@ -7,7 +7,6 @@ import (
 	"github.com/go-gl/gl/v2.1/gl"
 )
 
-// Performs raycasting and renders the scene
 func (e *Engine) Render() {
 	if e.FloorTexture == nil || e.CeilingTexture == nil {
 		return
@@ -22,7 +21,6 @@ func (e *Engine) Render() {
 	e.RenderDebugOverlay()
 }
 
-// Clears the framebuffer with ceiling and floor colors
 func (e *Engine) clearBuffer() {
 	for y := 0; y < e.ScreenHeight; y++ {
 		for x := 0; x < e.ScreenWidth; x++ {
@@ -49,7 +47,6 @@ func (e *Engine) clearBuffer() {
 	}
 }
 
-// Cast a single ray for a screen column
 func (e *Engine) castRay(x int) {
 	cameraX := 2*float64(x)/float64(e.ScreenWidth) - 1
 	rayDirX := e.Player.DirX + e.Player.PlaneX*cameraX
@@ -141,7 +138,6 @@ func (e *Engine) castRay(x int) {
 	e.drawTexturedStripe(x, drawStart, drawEnd, lineHeight, texX, texture, perpWallDist)
 }
 
-// Draws a vertical textured stripe
 func (e *Engine) drawTexturedStripe(x, drawStart, drawEnd, lineHeight, texX int, texture *Texture, perpWallDist float64) {
 	for y := drawStart; y < drawEnd; y++ {
 		d := y*256 - e.ScreenHeight*128 + lineHeight*128
@@ -166,7 +162,6 @@ func (e *Engine) drawTexturedStripe(x, drawStart, drawEnd, lineHeight, texX int,
 	}
 }
 
-// Renders the framebuffer to the screen
 func (e *Engine) DrawFrameBuffer() {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.Enable(gl.TEXTURE_2D)
