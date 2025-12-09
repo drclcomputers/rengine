@@ -1,5 +1,5 @@
 // texture.go - Texture loading and management
-package rengine
+package engine
 
 import (
 	"fmt"
@@ -23,6 +23,7 @@ const (
 	TextureTypeJPEG
 )
 
+// loadTexture is the internal texture loading function
 func (e *Engine) loadTexture(path string, imageType int, texType string) (*Texture, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -81,6 +82,7 @@ func (e *Engine) loadTexture(path string, imageType int, texType string) (*Textu
 	return texture, nil
 }
 
+// Loads a wall texture and adds it to the engine
 func (e *Engine) LoadTexture(path string, imageType int) (*Texture, error) {
 	texture, err := e.loadTexture(path, imageType, "wall")
 	if err != nil {
@@ -90,6 +92,7 @@ func (e *Engine) LoadTexture(path string, imageType int) (*Texture, error) {
 	return texture, nil
 }
 
+// Loads the floor texture (required)
 func (e *Engine) LoadFloorTexture(path string, imageType int) (*Texture, error) {
 	texture, err := e.loadTexture(path, imageType, "floor")
 	if err != nil {
@@ -99,6 +102,7 @@ func (e *Engine) LoadFloorTexture(path string, imageType int) (*Texture, error) 
 	return texture, nil
 }
 
+// Loads the ceiling texture (required)
 func (e *Engine) LoadCeilingTexture(path string, imageType int) (*Texture, error) {
 	texture, err := e.loadTexture(path, imageType, "ceiling")
 	if err != nil {
@@ -108,6 +112,7 @@ func (e *Engine) LoadCeilingTexture(path string, imageType int) (*Texture, error
 	return texture, nil
 }
 
+// Retrieves a pixel color from the texture
 func (t *Texture) GetPixel(x, y int) (r, g, b byte) {
 	if x < 0 || x >= t.Width || y < 0 || y >= t.Height {
 		return 0, 0, 0

@@ -1,5 +1,5 @@
 // engine.go - Core engine structure and initialization
-package rengine
+package engine
 
 import (
 	"fmt"
@@ -10,79 +10,73 @@ import (
 )
 
 type Engine struct {
-	ScreenWidth      int
-	ScreenHeight     int
-	MapWidth         int
-	MapHeight        int
-	FPS              int
-	WorldMap         [][]int
-	Player           *Player
-	FrameBuffer      []byte
-	KeyState         map[glfw.Key]bool
-	Textures         []*Texture
-	FloorTexture     *Texture
-	CeilingTexture   *Texture
-	Window           *glfw.Window
-	ScreenTexture    uint32
-	Running          bool
+	ScreenWidth   int
+	ScreenHeight  int
+	MapWidth      int
+	MapHeight     int
+	FPS           int
+	WorldMap      [][]int
+	Player        *Player
+	FrameBuffer   []byte
+	KeyState      map[glfw.Key]bool
+	Textures      []*Texture
+	FloorTexture  *Texture
+	CeilingTexture *Texture
+	Window        *glfw.Window
+	ScreenTexture uint32
+	Running       bool
 	SprintMultiplier float64
 	DebugInfo        *DebugInfo
-	Camera           *Camera
-	Vehicle          *Vehicle
-	HeightMap        *HeightMap
 }
 
 type Player struct {
-	PosX             float64
-	PosY             float64
-	PosZ             float64
-	DirX             float64
-	DirY             float64
-	PlaneX           float64
-	PlaneY           float64
-	MoveSpeed        float64
-	RotationSpeed    float64
-	VerticalVelocity float64
-	IsGrounded       bool
+	PosX          float64
+	PosY          float64
+	DirX          float64
+	DirY          float64
+	PlaneX        float64
+	PlaneY        float64
+	MoveSpeed     float64
+	RotationSpeed float64
 }
 
+// Creates and initializes a new engine instance
 func NewEngine(width, height, mapWidth, mapHeight, fps int) *Engine {
 	return &Engine{
-		ScreenWidth:      width,
-		ScreenHeight:     height,
-		MapWidth:         mapWidth,
-		MapHeight:        mapHeight,
-		FPS:              fps,
-		KeyState:         make(map[glfw.Key]bool),
-		Textures:         make([]*Texture, 0),
-		Running:          false,
+		ScreenWidth:  width,
+		ScreenHeight: height,
+		MapWidth:     mapWidth,
+		MapHeight:    mapHeight,
+		FPS:          fps,
+		KeyState:     make(map[glfw.Key]bool),
+		Textures:     make([]*Texture, 0),
+		Running:      false,
 		SprintMultiplier: 2.0,
 	}
 }
 
+// Sets the game world map
 func (e *Engine) SetWorldMap(worldMap [][]int) {
 	e.WorldMap = worldMap
 }
 
+// Initializes the player with position and direction
 func (e *Engine) SetPlayer(posX, posY, dirX, dirY, planeX, planeY, moveSpeed, rotSpeed float64) {
 	e.Player = &Player{
-		PosX:             posX,
-		PosY:             posY,
-		PosZ:             0.0,
-		DirX:             dirX,
-		DirY:             dirY,
-		PlaneX:           planeX,
-		PlaneY:           planeY,
-		MoveSpeed:        moveSpeed,
-		RotationSpeed:    rotSpeed,
-		VerticalVelocity: 0.0,
-		IsGrounded:       true,
+		PosX:          posX,
+		PosY:          posY,
+		DirX:          dirX,
+		DirY:          dirY,
+		PlaneX:        planeX,
+		PlaneY:        planeY,
+		MoveSpeed:     moveSpeed,
+		RotationSpeed: rotSpeed,
 	}
 }
 
+// Sets up GLFW, OpenGL, and creates the window
 func (e *Engine) Initialize(fullscreen bool) error {
-	fmt.Println("rengine ver", ver)
-
+	// Init GLFW
 	if err := glfw.Init(); err != nil {
 		return fmt.Errorf("failed to initialize glfw: %v", err)
 	}
@@ -129,6 +123,7 @@ func (e *Engine) Initialize(fullscreen bool) error {
 	return nil
 }
 
+// initScreenTexture creates the texture for rendering the framebuffer
 func (e *Engine) initScreenTexture() {
 	gl.GenTextures(1, &e.ScreenTexture)
 	gl.BindTexture(gl.TEXTURE_2D, e.ScreenTexture)
@@ -147,10 +142,12 @@ func (e *Engine) initScreenTexture() {
 	)
 }
 
+// keyCallback handles keyboard input
 func (e *Engine) keyCallback(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 	switch action {
 	case glfw.Press:
 		e.KeyState[key] = true
+
 		if key == glfw.KeyF3 {
 			e.ToggleDebug()
 		}
@@ -164,16 +161,19 @@ func (e *Engine) keyCallback(w *glfw.Window, key glfw.Key, scancode int, action 
 	}
 }
 
+// Cleanup releases resources
 func (e *Engine) Cleanup() {
 	if e.Window != nil {
 		glfw.Terminate()
 	}
 }
 
+// IsRunning returns whether the engine is still running
 func (e *Engine) IsRunning() bool {
 	return e.Running && !e.Window.ShouldClose()
 }
 
+// GetTexture returns a texture by index
 func (e *Engine) GetTexture(index int) *Texture {
 	if index >= 0 && index < len(e.Textures) {
 		return e.Textures[index]
@@ -182,10 +182,12 @@ func (e *Engine) GetTexture(index int) *Texture {
 	return nil
 }
 
+// Sets the sprint speed multiplier
 func (e *Engine) SetSprintMultiplier(multiplier float64) {
 	e.SprintMultiplier = multiplier
 }
 
+// Checks if the shift key is pressed
 func (e *Engine) IsSprinting() bool {
 	return e.KeyState[glfw.KeyLeftShift] || e.KeyState[glfw.KeyRightShift]
 }

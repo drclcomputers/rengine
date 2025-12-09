@@ -1,5 +1,5 @@
 // debug.go - Debug overlay and performance monitoring
-package rengine
+package engine
 
 import (
 	"fmt"
@@ -24,6 +24,7 @@ type DebugInfo struct {
 	fpsUpdateTime time.Time
 }
 
+// Enables the debug overlay
 func (e *Engine) EnableDebug() {
 	if e.DebugInfo == nil {
 		e.DebugInfo = &DebugInfo{
@@ -36,12 +37,14 @@ func (e *Engine) EnableDebug() {
 	}
 }
 
+// Disables the debug overlay
 func (e *Engine) DisableDebug() {
 	if e.DebugInfo != nil {
 		e.DebugInfo.Enabled = false
 	}
 }
 
+// Toggles the debug overlay on/off
 func (e *Engine) ToggleDebug() {
 	if e.DebugInfo == nil {
 		e.EnableDebug()
@@ -50,10 +53,12 @@ func (e *Engine) ToggleDebug() {
 	}
 }
 
+// Returns whether debug mode is enabled
 func (e *Engine) IsDebugEnabled() bool {
 	return e.DebugInfo != nil && e.DebugInfo.Enabled
 }
 
+// Updates all debug information
 func (e *Engine) UpdateDebugInfo() {
 	if e.DebugInfo == nil || !e.DebugInfo.Enabled {
 		return
@@ -72,8 +77,8 @@ func (e *Engine) UpdateDebugInfo() {
 	
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
-	e.DebugInfo.RAMUsageMB = float64(m.Alloc) / 1024 / 1024
-	e.DebugInfo.RAMAllocMB = float64(m.TotalAlloc) / 1024 / 1024
+	e.DebugInfo.RAMUsageMB = float64(m.Sys) / 1024 
+	e.DebugInfo.RAMAllocMB = float64(m.TotalAlloc) / 1024
 	
 	e.DebugInfo.NumGoroutines = runtime.NumGoroutine()
 	
@@ -85,6 +90,7 @@ func (e *Engine) UpdateDebugInfo() {
 	}
 }
 
+// Draws the debug information on screen
 func (e *Engine) RenderDebugOverlay() {
 	if e.DebugInfo == nil || !e.DebugInfo.Enabled {
 		return
@@ -110,6 +116,7 @@ func (e *Engine) RenderDebugOverlay() {
 	e.drawDebugText(debugLines, 15, 20)
 }
 
+// Draws a semi-transparent background for debug text
 func (e *Engine) drawDebugBackground(x, y, width, height int) {
 	for dy := 0; dy < height; dy++ {
 		for dx := 0; dx < width; dx++ {
@@ -126,6 +133,7 @@ func (e *Engine) drawDebugBackground(x, y, width, height int) {
 	}
 }
 
+// Draws text on the framebuffer
 func (e *Engine) drawDebugText(lines []string, startX, startY int) {
 	for i, line := range lines {
 		y := startY + i*14
@@ -137,6 +145,7 @@ func (e *Engine) drawDebugText(lines []string, startX, startY int) {
 	}
 }
 
+// Draws a single character using a simple 5x7 bitmap font
 func (e *Engine) drawDebugChar(x, y int, char rune) {
 	pattern := e.getCharPattern(char)
 	
@@ -158,6 +167,7 @@ func (e *Engine) drawDebugChar(x, y int, char rune) {
 }
 
 
+// Prints debug information to console
 func (e *Engine) PrintDebugInfo() {
 	if e.DebugInfo == nil || !e.DebugInfo.Enabled {
 		return
@@ -173,6 +183,7 @@ func (e *Engine) PrintDebugInfo() {
 		e.DebugInfo.PlayerDirX, e.DebugInfo.PlayerDirY)
 }
 
+// Returns the current FPS
 func (e *Engine) GetFPS() float64 {
 	if e.DebugInfo == nil {
 		return 0
@@ -180,6 +191,7 @@ func (e *Engine) GetFPS() float64 {
 	return e.DebugInfo.FPS
 }
 
+// Returns current RAM usage in MB
 func (e *Engine) GetRAMUsage() float64 {
 	if e.DebugInfo == nil {
 		return 0
@@ -187,6 +199,7 @@ func (e *Engine) GetRAMUsage() float64 {
 	return e.DebugInfo.RAMUsageMB
 }
 
+// getCharPattern returns a 5x7 bitmap pattern for a character
 func (e *Engine) getCharPattern(char rune) [7]byte {
 	switch char {
 	case '0':
