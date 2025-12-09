@@ -81,6 +81,8 @@ func (e *Engine) SetPlayer(posX, posY, dirX, dirY, planeX, planeY, moveSpeed, ro
 }
 
 func (e *Engine) Initialize(fullscreen bool) error {
+	fmt.Println("rengine ver", ver)
+
 	if err := glfw.Init(); err != nil {
 		return fmt.Errorf("failed to initialize glfw: %v", err)
 	}
