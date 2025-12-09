@@ -1,4 +1,4 @@
-// renderer.go - Raycasting renderer
+// renderer.go - Raycasting renderer with proper floor/ceiling
 package engine
 
 import (
@@ -7,13 +7,12 @@ import (
 	"github.com/go-gl/gl/v2.1/gl"
 )
 
-// Performs raycasting and renders the scene
 func (e *Engine) Render() {
 	if e.FloorTexture == nil || e.CeilingTexture == nil {
 		return
 	}
 
-	e.clearBuffer()
+	e.renderFloorCeiling()
 
 	for x := 0; x < e.ScreenWidth; x++ {
 		e.castRay(x)
@@ -22,34 +21,59 @@ func (e *Engine) Render() {
 	e.RenderDebugOverlay()
 }
 
-// Clears the framebuffer with ceiling and floor colors
-func (e *Engine) clearBuffer() {
-	for y := 0; y < e.ScreenHeight; y++ {
+func (e *Engine) renderFloorCeiling() {
+	for y := e.ScreenHeight/2 + 1; y < e.ScreenHeight; y++ {
+		rayDirX0 := e.Player.DirX - e.Player.PlaneX
+		rayDirY0 := e.Player.DirY - e.Player.PlaneY
+		rayDirX1 := e.Player.DirX + e.Player.PlaneX
+		rayDirY1 := e.Player.DirY + e.Player.PlaneY
+
+		p := y - e.ScreenHeight/2
+
+		posZ := 0.5 * float64(e.ScreenHeight)
+
+		rowDistance := posZ / float64(p)
+
+		floorStepX := rowDistance * (rayDirX1 - rayDirX0) / float64(e.ScreenWidth)
+		floorStepY := rowDistance * (rayDirY1 - rayDirY0) / float64(e.ScreenWidth)
+
+		floorX := e.Player.PosX + rowDistance*rayDirX0
+		floorY := e.Player.PosY + rowDistance*rayDirY0
+
 		for x := 0; x < e.ScreenWidth; x++ {
+			tx := int(float64(e.FloorTexture.Width) * (floorX - math.Floor(floorX))) & (e.FloorTexture.Width - 1)
+			ty := int(float64(e.FloorTexture.Height) * (floorY - math.Floor(floorY))) & (e.FloorTexture.Height - 1)
+
+			floorX += floorStepX
+			floorY += floorStepY
+
+			r, g, b := e.FloorTexture.GetPixel(tx, ty)
+			factor := 1.0 / (1.0 + rowDistance*0.1)
+			r = byte(float64(r) * factor)
+			g = byte(float64(g) * factor)
+			b = byte(float64(b) * factor)
+
 			idx := (y*e.ScreenWidth + x) * 4
-			
-			if y < e.ScreenHeight/2 {
-				texX := (x * e.CeilingTexture.Width) / e.ScreenWidth
-				texY := (y * e.CeilingTexture.Height) / (e.ScreenHeight / 2)
-				r, g, b := e.CeilingTexture.GetPixel(texX, texY)
-				e.FrameBuffer[idx] = r
-				e.FrameBuffer[idx+1] = g
-				e.FrameBuffer[idx+2] = b
-				e.FrameBuffer[idx+3] = 255
-			} else {
-				texX := (x * e.FloorTexture.Width) / e.ScreenWidth
-				texY := ((y - e.ScreenHeight/2) * e.FloorTexture.Height) / (e.ScreenHeight / 2)
-				r, g, b := e.FloorTexture.GetPixel(texX, texY)
-				e.FrameBuffer[idx] = r
-				e.FrameBuffer[idx+1] = g
-				e.FrameBuffer[idx+2] = b
-				e.FrameBuffer[idx+3] = 255
-			}
+			e.FrameBuffer[idx] = r
+			e.FrameBuffer[idx+1] = g
+			e.FrameBuffer[idx+2] = b
+			e.FrameBuffer[idx+3] = 255
+
+			r2, g2, b2 := e.CeilingTexture.GetPixel(tx, ty)
+			r2 = byte(float64(r2) * factor)
+			g2 = byte(float64(g2) * factor)
+			b2 = byte(float64(b2) * factor)
+
+			ceilingY := e.ScreenHeight - y - 1
+			idx2 := (ceilingY*e.ScreenWidth + x) * 4
+			e.FrameBuffer[idx2] = r2
+			e.FrameBuffer[idx2+1] = g2
+			e.FrameBuffer[idx2+2] = b2
+			e.FrameBuffer[idx2+3] = 255
 		}
 	}
 }
 
-// Cast a single ray for a screen column
 func (e *Engine) castRay(x int) {
 	cameraX := 2*float64(x)/float64(e.ScreenWidth) - 1
 	rayDirX := e.Player.DirX + e.Player.PlaneX*cameraX
@@ -141,7 +165,6 @@ func (e *Engine) castRay(x int) {
 	e.drawTexturedStripe(x, drawStart, drawEnd, lineHeight, texX, texture, perpWallDist)
 }
 
-// Draws a vertical textured stripe
 func (e *Engine) drawTexturedStripe(x, drawStart, drawEnd, lineHeight, texX int, texture *Texture, perpWallDist float64) {
 	for y := drawStart; y < drawEnd; y++ {
 		d := y*256 - e.ScreenHeight*128 + lineHeight*128
@@ -166,7 +189,6 @@ func (e *Engine) drawTexturedStripe(x, drawStart, drawEnd, lineHeight, texX int,
 	}
 }
 
-// Renders the framebuffer to the screen
 func (e *Engine) DrawFrameBuffer() {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.Enable(gl.TEXTURE_2D)

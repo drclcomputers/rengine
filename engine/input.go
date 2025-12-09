@@ -7,14 +7,13 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
-// Player movement and rotation
 func (e *Engine) HandleInput() {
 	if e.Player == nil {
 		return
 	}
 
 	if e.KeyState[glfw.KeyLeftShift] {
-		e.SprintMultiplier = 3.0
+		e.SprintMultiplier = 2.0
 	} else {
 		e.SprintMultiplier = 1.0
 	}
@@ -44,7 +43,6 @@ func (e *Engine) HandleInput() {
 	}
 }
 
-// Handles collision detection and movement
 func (e *Engine) movePlayer(dirX, dirY float64) {
 	newPosX := e.Player.PosX + dirX*e.Player.MoveSpeed*e.SprintMultiplier
 	newPosY := e.Player.PosY + dirY*e.Player.MoveSpeed*e.SprintMultiplier
@@ -58,7 +56,6 @@ func (e *Engine) movePlayer(dirX, dirY float64) {
 	}
 }
 
-// Rotates the player's direction and camera plane
 func (e *Engine) rotatePlayer(angle float64) {
 	oldDirX := e.Player.DirX
 	e.Player.DirX = e.Player.DirX*math.Cos(angle) - e.Player.DirY*math.Sin(angle)
@@ -69,7 +66,6 @@ func (e *Engine) rotatePlayer(angle float64) {
 	e.Player.PlaneY = oldPlaneX*math.Sin(angle) + e.Player.PlaneY*math.Cos(angle)
 }
 
-// Checks if a position is walkable
 func (e *Engine) isWalkable(x, y int) bool {
 	if x < 0 || x >= e.MapWidth || y < 0 || y >= e.MapHeight {
 		return false
@@ -77,7 +73,6 @@ func (e *Engine) isWalkable(x, y int) bool {
 	return e.WorldMap[x][y] == 0
 }
 
-// Checks if a key is pressed
 func (e *Engine) IsKeyPressed(key glfw.Key) bool {
 	return e.KeyState[key]
 }

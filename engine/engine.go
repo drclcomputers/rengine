@@ -40,7 +40,6 @@ type Player struct {
 	RotationSpeed float64
 }
 
-// Creates and initializes a new engine instance
 func NewEngine(width, height, mapWidth, mapHeight, fps int) *Engine {
 	return &Engine{
 		ScreenWidth:  width,
@@ -55,12 +54,10 @@ func NewEngine(width, height, mapWidth, mapHeight, fps int) *Engine {
 	}
 }
 
-// Sets the game world map
 func (e *Engine) SetWorldMap(worldMap [][]int) {
 	e.WorldMap = worldMap
 }
 
-// Initializes the player with position and direction
 func (e *Engine) SetPlayer(posX, posY, dirX, dirY, planeX, planeY, moveSpeed, rotSpeed float64) {
 	e.Player = &Player{
 		PosX:          posX,
@@ -74,9 +71,7 @@ func (e *Engine) SetPlayer(posX, posY, dirX, dirY, planeX, planeY, moveSpeed, ro
 	}
 }
 
-// Sets up GLFW, OpenGL, and creates the window
 func (e *Engine) Initialize(fullscreen bool) error {
-	// Init GLFW
 	if err := glfw.Init(); err != nil {
 		return fmt.Errorf("failed to initialize glfw: %v", err)
 	}
@@ -123,7 +118,6 @@ func (e *Engine) Initialize(fullscreen bool) error {
 	return nil
 }
 
-// initScreenTexture creates the texture for rendering the framebuffer
 func (e *Engine) initScreenTexture() {
 	gl.GenTextures(1, &e.ScreenTexture)
 	gl.BindTexture(gl.TEXTURE_2D, e.ScreenTexture)
@@ -142,7 +136,6 @@ func (e *Engine) initScreenTexture() {
 	)
 }
 
-// keyCallback handles keyboard input
 func (e *Engine) keyCallback(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 	switch action {
 	case glfw.Press:
@@ -161,33 +154,20 @@ func (e *Engine) keyCallback(w *glfw.Window, key glfw.Key, scancode int, action 
 	}
 }
 
-// Cleanup releases resources
 func (e *Engine) Cleanup() {
 	if e.Window != nil {
 		glfw.Terminate()
 	}
 }
 
-// IsRunning returns whether the engine is still running
 func (e *Engine) IsRunning() bool {
 	return e.Running && !e.Window.ShouldClose()
 }
 
-// GetTexture returns a texture by index
 func (e *Engine) GetTexture(index int) *Texture {
 	if index >= 0 && index < len(e.Textures) {
 		return e.Textures[index]
 	}
 	log.Printf("Warning: texture index %d out of range", index)
 	return nil
-}
-
-// Sets the sprint speed multiplier
-func (e *Engine) SetSprintMultiplier(multiplier float64) {
-	e.SprintMultiplier = multiplier
-}
-
-// Checks if the shift key is pressed
-func (e *Engine) IsSprinting() bool {
-	return e.KeyState[glfw.KeyLeftShift] || e.KeyState[glfw.KeyRightShift]
 }
