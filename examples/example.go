@@ -15,8 +15,6 @@ func init() {
 }
 
 func Example() {
-	eng := engine.NewEngine(640, 480, 24, 19, 33)
-
 	worldMap := [][]int{
     	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 	    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -38,7 +36,9 @@ func Example() {
 	    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
 	    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 	}
-	
+
+	eng := engine.NewEngine(640, 480, len(worldMap), len(worldMap[1]), 15)
+
 	eng.SetWorldMap(worldMap)
 
 	eng.SetPlayer(

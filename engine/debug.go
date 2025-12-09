@@ -77,8 +77,8 @@ func (e *Engine) UpdateDebugInfo() {
 	
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
-	e.DebugInfo.RAMUsageMB = float64(m.Sys) / 1024 
-	e.DebugInfo.RAMAllocMB = float64(m.TotalAlloc) / 1024
+	e.DebugInfo.RAMUsageMB = float64(m.Sys) / 1024 / 1024 
+	e.DebugInfo.RAMAllocMB = float64(m.TotalAlloc) / 1024 / 1024
 	
 	e.DebugInfo.NumGoroutines = runtime.NumGoroutine()
 	

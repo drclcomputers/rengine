@@ -13,6 +13,12 @@ func (e *Engine) HandleInput() {
 		return
 	}
 
+	if e.KeyState[glfw.KeyLeftShift] {
+		e.SprintMultiplier = 3.0
+	} else {
+		e.SprintMultiplier = 1.0
+	}
+
 	if e.KeyState[glfw.KeyW] {
 		e.movePlayer(e.Player.DirX, e.Player.DirY)
 	}
@@ -40,8 +46,8 @@ func (e *Engine) HandleInput() {
 
 // Handles collision detection and movement
 func (e *Engine) movePlayer(dirX, dirY float64) {
-	newPosX := e.Player.PosX + dirX*e.Player.MoveSpeed
-	newPosY := e.Player.PosY + dirY*e.Player.MoveSpeed
+	newPosX := e.Player.PosX + dirX*e.Player.MoveSpeed*e.SprintMultiplier
+	newPosY := e.Player.PosY + dirY*e.Player.MoveSpeed*e.SprintMultiplier
 
 	if e.isWalkable(int(newPosX), int(e.Player.PosY)) {
 		e.Player.PosX = newPosX
