@@ -24,6 +24,8 @@ type Engine struct {
 	CeilingTexture *Texture
 	Window        *glfw.Window
 	ScreenTexture uint32
+	Sprites  []*Sprite
+	ZBuffer  []float64
 	Running       bool
 	SprintMultiplier float64
 	DebugInfo        *DebugInfo
@@ -49,6 +51,8 @@ func NewEngine(width, height, mapWidth, mapHeight, fps int) *Engine {
 		FPS:          fps,
 		KeyState:     make(map[glfw.Key]bool),
 		Textures:     make([]*Texture, 0),
+		Sprites:      make([]*Sprite, 0),   
+		ZBuffer:      make([]float64, width),
 		Running:      false,
 		SprintMultiplier: 2.0,
 	}

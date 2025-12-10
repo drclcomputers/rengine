@@ -73,7 +73,7 @@ func (e *Engine) UpdateDebugInfo() {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 	e.DebugInfo.RAMUsageMB = float64(m.Sys) / 1024 / 1024 
-	e.DebugInfo.RAMAllocMB = float64(m.TotalAlloc) / 1024 / 1024
+	e.DebugInfo.RAMAllocMB = float64(m.StackSys) / 1024 / 1024
 	
 	e.DebugInfo.NumGoroutines = runtime.NumGoroutine()
 	
@@ -102,6 +102,7 @@ func (e *Engine) RenderDebugOverlay() {
 		fmt.Sprintf("Map Size: %dx%d", e.MapWidth, e.MapHeight),
 		fmt.Sprintf("Screen: %dx%d", e.ScreenWidth, e.ScreenHeight),
 		fmt.Sprintf("Textures Loaded: %d", len(e.Textures)),
+		fmt.Sprintf("Sprites: %d", len(e.Sprites)),
 	}
 
 	e.drawDebugBackground(10, 10, 280, len(debugLines)*16+10)

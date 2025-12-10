@@ -119,3 +119,16 @@ func (t *Texture) GetPixel(x, y int) (r, g, b byte) {
 	b = t.Data.Pix[idx+2]
 	return
 }
+
+func (t *Texture) GetPixelWithAlpha(x, y int) (r, g, b, a byte) {
+	if x < 0 || x >= t.Width || y < 0 || y >= t.Height {
+		return 0, 0, 0, 0
+	}
+
+	idx := (y*t.Width + x) * 4
+	r = t.Data.Pix[idx]
+	g = t.Data.Pix[idx+1]
+	b = t.Data.Pix[idx+2]
+	a = t.Data.Pix[idx+3]
+	return
+}

@@ -6,8 +6,9 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/go-gl/glfw/v3.3/glfw"
 	"rengine/engine"
+
+	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
 func init() {
@@ -37,7 +38,7 @@ func Example() {
 	    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 	}
 
-	eng := engine.NewEngine(640, 480, len(worldMap), len(worldMap[1]), 25)
+	eng := engine.NewEngine(640, 480, len(worldMap), len(worldMap[1]), 24)
 
 	eng.SetWorldMap(worldMap)
 
@@ -78,6 +79,25 @@ func Example() {
 	}
 
 	eng.EnableDebug()
+
+	barrelTex, err := eng.LoadSpriteTexture("examples/pillar.jpg", engine.TextureTypeJPEG)
+	if err != nil {
+		log.Println("Warning: Could not load barrel sprite:", err)
+	} else {
+		b1 := engine.NewSprite(5.5, 5.5, barrelTex)
+		b1.Scale = 0.5
+		b1.VMove = -1.5
+		eng.AddSprite(b1)
+	}
+
+	pillarTex, err := eng.LoadSpriteTexture("examples/pillar.jpg", engine.TextureTypeJPEG)
+	if err != nil {
+		log.Println("Warning: Could not load pillar sprite:", err)
+	} else {
+		pillar := engine.NewSprite(10.5, 10.5, pillarTex)
+		pillar.Scale = 1.5
+		eng.AddSprite(pillar)
+	}
 
 	for eng.IsRunning() {
 		eng.UpdateDebugInfo()

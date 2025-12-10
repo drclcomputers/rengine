@@ -3,6 +3,7 @@ package engine
 
 import (
 	"math"
+	"time"
 
 	"github.com/go-gl/gl/v2.1/gl"
 )
@@ -14,11 +15,19 @@ func (e *Engine) Render() {
 
 	e.renderFloorCeiling()
 
+	for i := range e.ZBuffer {
+		e.ZBuffer[i] = 1e30
+	}
+
 	for x := 0; x < e.ScreenWidth; x++ {
 		e.castRay(x)
 	}
 
+	e.RenderSprites() 
+
 	e.RenderDebugOverlay()
+
+	time.Sleep(time.Duration(1000/e.FPS))
 }
 
 func (e *Engine) renderFloorCeiling() {
@@ -131,6 +140,8 @@ func (e *Engine) castRay(x int) {
 	} else {
 		perpWallDist = (float64(mapY) - e.Player.PosY + (1-float64(stepY))/2) / rayDirY
 	}
+
+	e.ZBuffer[x] = perpWallDist
 
 	lineHeight := int(float64(e.ScreenHeight) / perpWallDist)
 	drawStart := -lineHeight/2 + e.ScreenHeight/2
