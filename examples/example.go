@@ -38,7 +38,7 @@ func Example() {
 		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 	}
 
-	eng := engine.NewEngine(640, 480, len(worldMap), len(worldMap[0]), 30)
+	eng := engine.NewEngine(640, 480, len(worldMap), len(worldMap[0]), 120)
 
 	eng.SetWorldMap(worldMap)
 
@@ -150,5 +150,8 @@ func Example() {
 
 		eng.Window.SwapBuffers()
 		glfw.PollEvents()
+
+
+		time.Sleep(time.Duration(1000/eng.FPS))
 	}
 }

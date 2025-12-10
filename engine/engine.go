@@ -32,6 +32,7 @@ type Engine struct {
 	SprintMultiplier float64
 	DebugInfo        *DebugInfo
 	LastUpdateTime   time.Time
+	EnemyStates      map[*Sprite]*EnemyState
 }
 
 type Player struct {
@@ -60,6 +61,7 @@ func NewEngine(width, height, mapWidth, mapHeight, fps int) *Engine {
 		SprintMultiplier: 2.0,
 		Combat:           NewCombat(),
 		LastUpdateTime:   time.Now(),
+		EnemyStates:      make(map[*Sprite]*EnemyState),
 	}
 }
 

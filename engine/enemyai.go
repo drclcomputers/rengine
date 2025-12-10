@@ -3,6 +3,7 @@ package engine
 
 import (
 	"math"
+	"time"
 )
 
 const (
@@ -14,15 +15,32 @@ const (
 )
 
 const (
-	EnemyDetectionRange = 10.0
-	EnemyAttackRange    = 1.5
+	EnemyDetectionRange  = 10.0
+	EnemyAttackRange     = 1.5
 	EnemyLosePlayerRange = 15.0
+	EnemyAttackCooldown  = 1.0
 )
 
+type EnemyState struct {
+	LastAttackTime time.Time
+}
+
 func (e *Engine) UpdateEnemies(deltaTime float64) {
+	// Initialize enemy state tracking if needed
+	if e.EnemyStates == nil {
+		e.EnemyStates = make(map[*Sprite]*EnemyState)
+	}
+
 	for _, sprite := range e.Sprites {
 		if sprite.Type != SpriteTypeEnemy {
 			continue
+		}
+
+		// Initialize state for new enemies
+		if e.EnemyStates[sprite] == nil {
+			e.EnemyStates[sprite] = &EnemyState{
+				LastAttackTime: time.Now().Add(-time.Second * 2), // Allow immediate first attack
+			}
 		}
 
 		if sprite.Health <= 0 {
@@ -64,7 +82,7 @@ func (e *Engine) updateEnemyBehavior(sprite *Sprite, deltaTime float64) {
 			return
 		}
 
-		e.enemyAttackPlayer(sprite)
+		e.enemyAttackPlayer(sprite, deltaTime)
 
 	case StateAttackingChasing:
 		if distToPlayer > EnemyLosePlayerRange {
@@ -73,7 +91,7 @@ func (e *Engine) updateEnemyBehavior(sprite *Sprite, deltaTime float64) {
 		}
 
 		if distToPlayer < EnemyAttackRange {
-			e.enemyAttackPlayer(sprite)
+			e.enemyAttackPlayer(sprite, deltaTime)
 		}
 
 		e.moveEnemyTowardsPlayer(sprite, deltaTime)
@@ -86,7 +104,7 @@ func (e *Engine) moveEnemyTowardsPlayer(sprite *Sprite, deltaTime float64) {
 	dist := math.Sqrt(dx*dx + dy*dy)
 
 	if dist < 0.1 {
-		return 
+		return
 	}
 
 	dirX := dx / dist
@@ -104,10 +122,21 @@ func (e *Engine) moveEnemyTowardsPlayer(sprite *Sprite, deltaTime float64) {
 	}
 }
 
-func (e *Engine) enemyAttackPlayer(sprite *Sprite) {
-	// TODO: Add attack cooldown to prevent constant damage
-	// For now, you'd implement damage dealing to player here
-	// Example: e.Player.Health -= sprite.Damage * deltaTime
+func (e *Engine) enemyAttackPlayer(sprite *Sprite, deltaTime float64) {
+	// Get enemy state
+	state := e.EnemyStates[sprite]
+	if state == nil {
+		return
+	}
+
+	// Check if enough time has passed since last attack
+	if time.Since(state.LastAttackTime).Seconds() >= EnemyAttackCooldown {
+		// Deal damage to player
+		e.DamagePlayer(sprite.Damage)
+		
+		// Update last attack time
+		state.LastAttackTime = time.Now()
+	}
 }
 
 func NewEnemy(x, y float64, texture *Texture, health, speed, damage float64) *Sprite {

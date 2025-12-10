@@ -27,6 +27,9 @@ func (e *Engine) Render() {
 	e.RenderSprites() 
 
 	e.RenderHUD()
+
+	e.RenderShootingEffects()
+
 	e.RenderDebugOverlay()
 
 	time.Sleep(time.Duration(1000/e.FPS))
@@ -84,6 +87,168 @@ func (e *Engine) RenderHUD() {
 
 	ammoText := fmt.Sprintf("Ammo: %d", e.Combat.Ammo)
 	e.drawDebugText([]string{ammoText}, healthX, healthY - 25)
+}
+
+func (e *Engine) RenderShootingEffects() {
+	// Muzzle flash effect
+	if e.IsMuzzleFlashActive() {
+		e.renderMuzzleFlash()
+	}
+
+	// Hit marker (crosshair confirmation)
+	if e.IsHitMarkerActive() {
+		e.renderHitMarker()
+	}
+
+	// Always render crosshair
+	e.renderCrosshair()
+}
+
+// Render muzzle flash as screen edge flash
+func (e *Engine) renderMuzzleFlash() {
+	flashIntensity := 100
+	borderSize := 5
+
+	// Top border
+	for y := 0; y < borderSize; y++ {
+		for x := 0; x < e.ScreenWidth; x++ {
+			idx := (y*e.ScreenWidth + x) * 4
+			e.FrameBuffer[idx] = byte(min(255, int(e.FrameBuffer[idx])+flashIntensity))
+			e.FrameBuffer[idx+1] = byte(min(255, int(e.FrameBuffer[idx+1])+flashIntensity))
+			e.FrameBuffer[idx+2] = 0
+			e.FrameBuffer[idx+3] = 255
+		}
+	}
+
+	// Bottom border
+	for y := e.ScreenHeight - borderSize; y < e.ScreenHeight; y++ {
+		for x := 0; x < e.ScreenWidth; x++ {
+			idx := (y*e.ScreenWidth + x) * 4
+			e.FrameBuffer[idx] = byte(min(255, int(e.FrameBuffer[idx])+flashIntensity))
+			e.FrameBuffer[idx+1] = byte(min(255, int(e.FrameBuffer[idx+1])+flashIntensity))
+			e.FrameBuffer[idx+2] = 0
+			e.FrameBuffer[idx+3] = 255
+		}
+	}
+
+	// Left border
+	for y := 0; y < e.ScreenHeight; y++ {
+		for x := 0; x < borderSize; x++ {
+			idx := (y*e.ScreenWidth + x) * 4
+			e.FrameBuffer[idx] = byte(min(255, int(e.FrameBuffer[idx])+flashIntensity))
+			e.FrameBuffer[idx+1] = byte(min(255, int(e.FrameBuffer[idx+1])+flashIntensity))
+			e.FrameBuffer[idx+2] = 0
+			e.FrameBuffer[idx+3] = 255
+		}
+	}
+
+	// Right border
+	for y := 0; y < e.ScreenHeight; y++ {
+		for x := e.ScreenWidth - borderSize; x < e.ScreenWidth; x++ {
+			idx := (y*e.ScreenWidth + x) * 4
+			e.FrameBuffer[idx] = byte(min(255, int(e.FrameBuffer[idx])+flashIntensity))
+			e.FrameBuffer[idx+1] = byte(min(255, int(e.FrameBuffer[idx+1])+flashIntensity))
+			e.FrameBuffer[idx+2] = 0
+			e.FrameBuffer[idx+3] = 255
+		}
+	}
+}
+
+func (e *Engine) renderCrosshair() {
+	centerX := e.ScreenWidth / 2
+	centerY := e.ScreenHeight / 2
+	size := 10
+	thickness := 2
+	gap := 3
+
+	// Horizontal line (left)
+	for x := centerX - size - gap; x < centerX - gap; x++ {
+		for y := centerY - thickness/2; y < centerY + thickness/2; y++ {
+			if x >= 0 && x < e.ScreenWidth && y >= 0 && y < e.ScreenHeight {
+				idx := (y*e.ScreenWidth + x) * 4
+				e.FrameBuffer[idx] = 255
+				e.FrameBuffer[idx+1] = 255
+				e.FrameBuffer[idx+2] = 255
+				e.FrameBuffer[idx+3] = 255
+			}
+		}
+	}
+
+	// Horizontal line (right)
+	for x := centerX + gap; x < centerX + size + gap; x++ {
+		for y := centerY - thickness/2; y < centerY + thickness/2; y++ {
+			if x >= 0 && x < e.ScreenWidth && y >= 0 && y < e.ScreenHeight {
+				idx := (y*e.ScreenWidth + x) * 4
+				e.FrameBuffer[idx] = 255
+				e.FrameBuffer[idx+1] = 255
+				e.FrameBuffer[idx+2] = 255
+				e.FrameBuffer[idx+3] = 255
+			}
+		}
+	}
+
+	// Vertical line (top)
+	for y := centerY - size - gap; y < centerY - gap; y++ {
+		for x := centerX - thickness/2; x < centerX + thickness/2; x++ {
+			if x >= 0 && x < e.ScreenWidth && y >= 0 && y < e.ScreenHeight {
+				idx := (y*e.ScreenWidth + x) * 4
+				e.FrameBuffer[idx] = 255
+				e.FrameBuffer[idx+1] = 255
+				e.FrameBuffer[idx+2] = 255
+				e.FrameBuffer[idx+3] = 255
+			}
+		}
+	}
+
+	// Vertical line (bottom)
+	for y := centerY + gap; y < centerY + size + gap; y++ {
+		for x := centerX - thickness/2; x < centerX + thickness/2; x++ {
+			if x >= 0 && x < e.ScreenWidth && y >= 0 && y < e.ScreenHeight {
+				idx := (y*e.ScreenWidth + x) * 4
+				e.FrameBuffer[idx] = 255
+				e.FrameBuffer[idx+1] = 255
+				e.FrameBuffer[idx+2] = 255
+				e.FrameBuffer[idx+3] = 255
+			}
+		}
+	}
+}
+
+// Render hit marker (X shape when you hit an enemy)
+func (e *Engine) renderHitMarker() {
+	centerX := e.ScreenWidth / 2
+	centerY := e.ScreenHeight / 2
+	size := 8
+	thickness := 2
+
+	// Draw X shape
+	for i := -size; i <= size; i++ {
+		// Diagonal line 1 (\)
+		for t := -thickness/2; t <= thickness/2; t++ {
+			x := centerX + i + t
+			y := centerY + i + t
+			if x >= 0 && x < e.ScreenWidth && y >= 0 && y < e.ScreenHeight {
+				idx := (y*e.ScreenWidth + x) * 4
+				e.FrameBuffer[idx] = 255
+				e.FrameBuffer[idx+1] = 0
+				e.FrameBuffer[idx+2] = 0
+				e.FrameBuffer[idx+3] = 255
+			}
+		}
+
+		// Diagonal line 2 (/)
+		for t := -thickness/2; t <= thickness/2; t++ {
+			x := centerX + i + t
+			y := centerY - i + t
+			if x >= 0 && x < e.ScreenWidth && y >= 0 && y < e.ScreenHeight {
+				idx := (y*e.ScreenWidth + x) * 4
+				e.FrameBuffer[idx] = 255
+				e.FrameBuffer[idx+1] = 0
+				e.FrameBuffer[idx+2] = 0
+				e.FrameBuffer[idx+3] = 255
+			}
+		}
+	}
 }
 
 func (e *Engine) renderFloorCeiling() {

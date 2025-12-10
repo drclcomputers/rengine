@@ -1,4 +1,4 @@
-// combat.go - Combat and shooting mechanics
+// combat.go - Fixed combat and shooting mechanics with effects
 package engine
 
 import (
@@ -7,23 +7,29 @@ import (
 )
 
 type Combat struct {
-	PlayerHealth    float64
-	PlayerMaxHealth float64
-	Ammo            int
-	MaxAmmo         int
-	LastShotTime    time.Time
-	ShotCooldown    time.Duration
-	Damage          float64
+	PlayerHealth      float64
+	PlayerMaxHealth   float64
+	Ammo              int
+	MaxAmmo           int
+	LastShotTime      time.Time
+	ShotCooldown      time.Duration
+	Damage            float64
+	MuzzleFlashTime   time.Time
+	MuzzleFlashDuration time.Duration
+	HitMarkerTime     time.Time
+	HitMarkerDuration time.Duration
 }
 
 func NewCombat() *Combat {
 	return &Combat{
-		PlayerHealth:    100,
-		PlayerMaxHealth: 100,
-		Ammo:            50,
-		MaxAmmo:         100,
-		ShotCooldown:    time.Millisecond * 250, 
-		Damage:          25.0,
+		PlayerHealth:        100,
+		PlayerMaxHealth:     100,
+		Ammo:                50,
+		MaxAmmo:             100,
+		ShotCooldown:        time.Millisecond * 250,
+		Damage:              25.0,
+		MuzzleFlashDuration: time.Millisecond * 50,
+		HitMarkerDuration:   time.Millisecond * 200,
 	}
 }
 
@@ -42,15 +48,16 @@ func (e *Engine) PlayerShoot() {
 
 	e.Combat.Ammo--
 	e.Combat.LastShotTime = time.Now()
+	e.Combat.MuzzleFlashTime = time.Now()
 
 	hitSprite := e.raycastForSprite()
 	
 	if hitSprite != nil && hitSprite.Type == SpriteTypeEnemy {
 		hitSprite.Health -= e.Combat.Damage
+		e.Combat.HitMarkerTime = time.Now() 
 		
 		if hitSprite.Health <= 0 {
 			hitSprite.State = StateDead
-			// You could add death animation or delay before removing
 		}
 	}
 }
@@ -72,12 +79,12 @@ func (e *Engine) raycastForSprite() *Sprite {
 		if dist < 0.001 {
 			continue
 		}
-		spriteX /= dist
-		spriteY /= dist
-
-		dot := spriteX*e.Player.DirX + spriteY*e.Player.DirY
 		
-		// dot > 0.95 means within ~18 degree cone
+		normSpriteX := spriteX / dist
+		normSpriteY := spriteY / dist
+
+		dot := normSpriteX*e.Player.DirX + normSpriteY*e.Player.DirY
+		
 		if dot > 0.95 && dist < closestDist {
 			closestDist = dist
 			closestSprite = sprite
@@ -95,7 +102,7 @@ func (e *Engine) DamagePlayer(damage float64) {
 	e.Combat.PlayerHealth -= damage
 	if e.Combat.PlayerHealth < 0 {
 		e.Combat.PlayerHealth = 0
-		// Handle player death
+		e.Running = false
 	}
 }
 
@@ -134,8 +141,6 @@ func (e *Engine) CheckItemPickup() {
 		dist := math.Sqrt(dx*dx + dy*dy)
 
 		if dist < 0.5 { 
-			// Handle pickup based on item type (you could add ItemSubType field)
-			// For now, assume all items are health packs
 			e.HealPlayer(25)
 			e.RemoveSprite(i)
 		}
@@ -146,8 +151,25 @@ func (e *Engine) CleanupDeadEnemies() {
 	for i := len(e.Sprites) - 1; i >= 0; i-- {
 		sprite := e.Sprites[i]
 		
-		if sprite.Type == SpriteTypeEnemy && sprite.State == StateDead && sprite.Health <= -100 {
-			e.RemoveSprite(i)
+		if sprite.Type == SpriteTypeEnemy && sprite.State == StateDead {
+			sprite.Health -= 0.5 
+			if sprite.Health <= 10 {
+				e.RemoveSprite(i)
+			}
 		}
 	}
+}
+
+func (e *Engine) IsMuzzleFlashActive() bool {
+	if e.Combat == nil {
+		return false
+	}
+	return time.Since(e.Combat.MuzzleFlashTime) < e.Combat.MuzzleFlashDuration
+}
+
+func (e *Engine) IsHitMarkerActive() bool {
+	if e.Combat == nil {
+		return false
+	}
+	return time.Since(e.Combat.HitMarkerTime) < e.Combat.HitMarkerDuration
 }

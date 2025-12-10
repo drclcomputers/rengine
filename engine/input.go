@@ -42,10 +42,6 @@ func (e *Engine) HandleInput() {
 		e.rotatePlayer(-e.Player.RotationSpeed)
 	}
 
-	if e.KeyState[glfw.KeySpace] {
-		e.PlayerShoot()
-	}
-
 	e.CheckItemPickup()
 }
 
