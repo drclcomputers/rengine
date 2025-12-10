@@ -4,31 +4,34 @@ package engine
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
 type Engine struct {
-	ScreenWidth   int
-	ScreenHeight  int
-	MapWidth      int
-	MapHeight     int
-	FPS           int
-	WorldMap      [][]int
-	Player        *Player
-	FrameBuffer   []byte
-	KeyState      map[glfw.Key]bool
-	Textures      []*Texture
-	FloorTexture  *Texture
-	CeilingTexture *Texture
-	Window        *glfw.Window
-	ScreenTexture uint32
-	Sprites  []*Sprite
-	ZBuffer  []float64
-	Running       bool
+	ScreenWidth   	 int
+	ScreenHeight  	 int
+	MapWidth      	 int
+	MapHeight     	 int
+	FPS           	 int
+	WorldMap      	 [][]int
+	Player         	 *Player
+	FrameBuffer   	 []byte
+	KeyState      	 map[glfw.Key]bool
+	Textures      	 []*Texture
+	FloorTexture  	 *Texture
+	CeilingTexture	 *Texture
+	Window        	 *glfw.Window
+	ScreenTexture 	 uint32
+	Sprites  	  	 []*Sprite
+	ZBuffer  	  	 []float64
+	Running       	 bool
+	Combat        	 *Combat
 	SprintMultiplier float64
 	DebugInfo        *DebugInfo
+	LastUpdateTime   time.Time
 }
 
 type Player struct {
@@ -55,6 +58,8 @@ func NewEngine(width, height, mapWidth, mapHeight, fps int) *Engine {
 		ZBuffer:      make([]float64, width),
 		Running:      false,
 		SprintMultiplier: 2.0,
+		Combat:           NewCombat(),
+		LastUpdateTime:   time.Now(),
 	}
 }
 
@@ -147,6 +152,10 @@ func (e *Engine) keyCallback(w *glfw.Window, key glfw.Key, scancode int, action 
 
 		if key == glfw.KeyF3 {
 			e.ToggleDebug()
+		}
+
+		if key == glfw.KeySpace {
+			e.PlayerShoot()
 		}
 	case glfw.Release:
 		e.KeyState[key] = false

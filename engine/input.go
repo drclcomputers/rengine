@@ -41,6 +41,12 @@ func (e *Engine) HandleInput() {
 	if e.KeyState[glfw.KeyE] {
 		e.rotatePlayer(-e.Player.RotationSpeed)
 	}
+
+	if e.KeyState[glfw.KeySpace] {
+		e.PlayerShoot()
+	}
+
+	e.CheckItemPickup()
 }
 
 func (e *Engine) movePlayer(dirX, dirY float64) {

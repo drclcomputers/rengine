@@ -6,13 +6,25 @@ import (
 	"sort"
 )
 
+type SpriteType int
+const (
+    SpriteTypeDecoration SpriteType = iota
+    SpriteTypeEnemy
+    SpriteTypeItem
+)
+
 type Sprite struct {
 	PosX     float64
 	PosY     float64
 	Texture  *Texture
 	Scale    float64
 	VMove    float64
-	Frame    int 
+	Frame    int
+	Type     SpriteType
+	Health   float64
+	Speed    float64
+	Damage   float64
+	State	 int  // 0 - idle, 1 - chasing, 2 - standing and attacking, 3 - chasing and attacking
 }
 
 type SpriteDistance struct {
@@ -28,6 +40,11 @@ func NewSprite(x, y float64, texture *Texture) *Sprite {
 		Scale:   1.0,
 		VMove:   0.0,
 		Frame:   0,
+		Type:    SpriteTypeDecoration,
+		Health:  100,
+		Speed:   0.0,
+		Damage:  0.0,
+		State:   0,
 	}
 }
 

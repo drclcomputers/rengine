@@ -2,6 +2,7 @@
 package engine
 
 import (
+	"fmt"
 	"math"
 	"time"
 
@@ -25,9 +26,64 @@ func (e *Engine) Render() {
 
 	e.RenderSprites() 
 
+	e.RenderHUD()
 	e.RenderDebugOverlay()
 
 	time.Sleep(time.Duration(1000/e.FPS))
+}
+
+func (e *Engine) RenderHUD() {
+	if e.Combat == nil {
+		return
+	}
+
+	healthPercent := e.Combat.PlayerHealth / e.Combat.PlayerMaxHealth
+	healthBarWidth := 200
+	healthBarHeight := 20
+	healthX := 20
+	healthY := e.ScreenHeight - 40
+
+	for y := range healthBarHeight {
+		for x := range healthBarWidth {
+			px := healthX + x
+			py := healthY + y
+			if px >= 0 && px < e.ScreenWidth && py >= 0 && py < e.ScreenHeight {
+				idx := (py*e.ScreenWidth + px) * 4
+				e.FrameBuffer[idx] = 100
+				e.FrameBuffer[idx+1] = 0
+				e.FrameBuffer[idx+2] = 0
+				e.FrameBuffer[idx+3] = 180
+			}
+		}
+	}
+
+	fillWidth := int(float64(healthBarWidth) * healthPercent)
+	for y := range healthBarHeight {
+		for x := range fillWidth {
+			px := healthX + x
+			py := healthY + y
+			if px >= 0 && px < e.ScreenWidth && py >= 0 && py < e.ScreenHeight {
+				idx := (py*e.ScreenWidth + px) * 4
+				if healthPercent > 0.5 {
+					e.FrameBuffer[idx] = 0
+					e.FrameBuffer[idx+1] = 255
+					e.FrameBuffer[idx+2] = 0
+				} else if healthPercent > 0.25 {
+					e.FrameBuffer[idx] = 255
+					e.FrameBuffer[idx+1] = 255
+					e.FrameBuffer[idx+2] = 0
+				} else {
+					e.FrameBuffer[idx] = 255
+					e.FrameBuffer[idx+1] = 0
+					e.FrameBuffer[idx+2] = 0
+				}
+				e.FrameBuffer[idx+3] = 255
+			}
+		}
+	}
+
+	ammoText := fmt.Sprintf("Ammo: %d", e.Combat.Ammo)
+	e.drawDebugText([]string{ammoText}, healthX, healthY - 25)
 }
 
 func (e *Engine) renderFloorCeiling() {
