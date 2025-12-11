@@ -73,7 +73,7 @@ func (e *Engine) UpdateDebugInfo() {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 	e.DebugInfo.RAMUsageMB = float64(m.Sys) / 1024 / 1024 
-	e.DebugInfo.RAMAllocMB = float64(m.StackSys) / 1024 / 1024
+	e.DebugInfo.RAMAllocMB = float64(m.Alloc) / 1024 / 1024
 	
 	e.DebugInfo.NumGoroutines = runtime.NumGoroutine()
 	
@@ -112,13 +112,6 @@ func (e *Engine) RenderDebugOverlay() {
 		fmt.Sprintf("Sprites: %d", len(e.Sprites)),
 		fmt.Sprintf("Enemies Alive: %d", enemyCount),
 		"",
-	}
-
-	if e.Combat != nil {
-		debugLines = append(debugLines, []string{
-			fmt.Sprintf("Health: %.0f/%.0f", e.Combat.PlayerHealth, e.Combat.PlayerMaxHealth),
-			fmt.Sprintf("Ammo: %d/%d", e.Combat.Ammo, e.Combat.MaxAmmo),
-		}...)
 	}
 
 	e.drawDebugBackground(10, 10, 280, len(debugLines)*16+10)
@@ -170,36 +163,6 @@ func (e *Engine) drawDebugChar(x, y int, char rune) {
 			}
 		}
 	}
-}
-
-
-func (e *Engine) PrintDebugInfo() {
-	if e.DebugInfo == nil || !e.DebugInfo.Enabled {
-		return
-	}
-
-	fmt.Println("=== Debug Info ===")
-	fmt.Printf("FPS: %.1f\n", e.DebugInfo.FPS)
-	fmt.Printf("Frame Time: %.2fms\n", e.DebugInfo.FrameTime.Seconds()*1000)
-	fmt.Printf("RAM Usage: %.2f MB\n", e.DebugInfo.RAMUsageMB)
-	fmt.Printf("Goroutines: %d\n", e.DebugInfo.NumGoroutines)
-	fmt.Printf("Player: (%.2f, %.2f) Dir: (%.2f, %.2f)\n", 
-		e.DebugInfo.PlayerPosX, e.DebugInfo.PlayerPosY,
-		e.DebugInfo.PlayerDirX, e.DebugInfo.PlayerDirY)
-}
-
-func (e *Engine) GetFPS() float64 {
-	if e.DebugInfo == nil {
-		return 0
-	}
-	return e.DebugInfo.FPS
-}
-
-func (e *Engine) GetRAMUsage() float64 {
-	if e.DebugInfo == nil {
-		return 0
-	}
-	return e.DebugInfo.RAMUsageMB
 }
 
 func (e *Engine) getCharPattern(char rune) [7]byte {

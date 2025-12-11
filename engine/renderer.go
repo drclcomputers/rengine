@@ -4,7 +4,6 @@ package engine
 import (
 	"fmt"
 	"math"
-	"time"
 
 	"github.com/go-gl/gl/v2.1/gl"
 )
@@ -31,16 +30,10 @@ func (e *Engine) Render() {
 	e.RenderShootingEffects()
 
 	e.RenderDebugOverlay()
-
-	time.Sleep(time.Duration(1000/e.FPS))
 }
 
 func (e *Engine) RenderHUD() {
-	if e.Combat == nil {
-		return
-	}
-
-	healthPercent := e.Combat.PlayerHealth / e.Combat.PlayerMaxHealth
+	healthPercent := e.Player.Health / e.Player.MaxHealth
 	healthBarWidth := 200
 	healthBarHeight := 20
 	healthX := 20
@@ -85,21 +78,11 @@ func (e *Engine) RenderHUD() {
 		}
 	}
 
-	ammoText := fmt.Sprintf("Ammo: %d", e.Combat.Ammo)
+	ammoText := fmt.Sprintf("Ammo: %d", e.Player.CurrentWeapon.CurrentAmmo)
 	e.drawDebugText([]string{ammoText}, healthX, healthY - 25)
 }
 
 func (e *Engine) RenderShootingEffects() {
-	// Muzzle flash effect
-	if e.IsMuzzleFlashActive() {
-		e.renderMuzzleFlash()
-	}
-
-	// Hit marker (crosshair confirmation)
-	if e.IsHitMarkerActive() {
-		e.renderHitMarker()
-	}
-
 	// Always render crosshair
 	e.renderCrosshair()
 }
@@ -110,11 +93,11 @@ func (e *Engine) renderMuzzleFlash() {
 	borderSize := 5
 
 	// Top border
-	for y := 0; y < borderSize; y++ {
+	for y := range borderSize {
 		for x := 0; x < e.ScreenWidth; x++ {
 			idx := (y*e.ScreenWidth + x) * 4
-			e.FrameBuffer[idx] = byte(min(255, int(e.FrameBuffer[idx])+flashIntensity))
-			e.FrameBuffer[idx+1] = byte(min(255, int(e.FrameBuffer[idx+1])+flashIntensity))
+			e.FrameBuffer[idx] = byte(min(255.0, float64(int(e.FrameBuffer[idx])+flashIntensity)))
+			e.FrameBuffer[idx+1] = byte(min(255.0, float64(int(e.FrameBuffer[idx+1])+flashIntensity)))
 			e.FrameBuffer[idx+2] = 0
 			e.FrameBuffer[idx+3] = 255
 		}
@@ -124,8 +107,8 @@ func (e *Engine) renderMuzzleFlash() {
 	for y := e.ScreenHeight - borderSize; y < e.ScreenHeight; y++ {
 		for x := 0; x < e.ScreenWidth; x++ {
 			idx := (y*e.ScreenWidth + x) * 4
-			e.FrameBuffer[idx] = byte(min(255, int(e.FrameBuffer[idx])+flashIntensity))
-			e.FrameBuffer[idx+1] = byte(min(255, int(e.FrameBuffer[idx+1])+flashIntensity))
+			e.FrameBuffer[idx] = byte(min(255, float64(int(e.FrameBuffer[idx])+flashIntensity)))
+			e.FrameBuffer[idx+1] = byte(min(255, float64(int(e.FrameBuffer[idx+1])+flashIntensity)))
 			e.FrameBuffer[idx+2] = 0
 			e.FrameBuffer[idx+3] = 255
 		}
@@ -133,10 +116,10 @@ func (e *Engine) renderMuzzleFlash() {
 
 	// Left border
 	for y := 0; y < e.ScreenHeight; y++ {
-		for x := 0; x < borderSize; x++ {
+		for x := range borderSize {
 			idx := (y*e.ScreenWidth + x) * 4
-			e.FrameBuffer[idx] = byte(min(255, int(e.FrameBuffer[idx])+flashIntensity))
-			e.FrameBuffer[idx+1] = byte(min(255, int(e.FrameBuffer[idx+1])+flashIntensity))
+			e.FrameBuffer[idx] = byte(min(255, float64(int(e.FrameBuffer[idx])+flashIntensity)))
+			e.FrameBuffer[idx+1] = byte(min(255, float64(int(e.FrameBuffer[idx+1])+flashIntensity)))
 			e.FrameBuffer[idx+2] = 0
 			e.FrameBuffer[idx+3] = 255
 		}
@@ -146,8 +129,8 @@ func (e *Engine) renderMuzzleFlash() {
 	for y := 0; y < e.ScreenHeight; y++ {
 		for x := e.ScreenWidth - borderSize; x < e.ScreenWidth; x++ {
 			idx := (y*e.ScreenWidth + x) * 4
-			e.FrameBuffer[idx] = byte(min(255, int(e.FrameBuffer[idx])+flashIntensity))
-			e.FrameBuffer[idx+1] = byte(min(255, int(e.FrameBuffer[idx+1])+flashIntensity))
+			e.FrameBuffer[idx] = byte(min(255, float64(int(e.FrameBuffer[idx])+flashIntensity)))
+			e.FrameBuffer[idx+1] = byte(min(255, float64(int(e.FrameBuffer[idx+1])+flashIntensity)))
 			e.FrameBuffer[idx+2] = 0
 			e.FrameBuffer[idx+3] = 255
 		}
@@ -366,7 +349,7 @@ func (e *Engine) castRay(x int) {
 
 	lineHeight := int(float64(e.ScreenHeight) / perpWallDist)
 	drawStart := -lineHeight/2 + e.ScreenHeight/2
-	drawStart = max(0, drawStart)
+	drawStart = int(max(0, float64(drawStart)))
 	drawEnd := lineHeight/2 + e.ScreenHeight/2
 	if drawEnd >= e.ScreenHeight {
 		drawEnd = e.ScreenHeight - 1
@@ -401,7 +384,7 @@ func (e *Engine) drawTexturedStripe(x, drawStart, drawEnd, lineHeight, texX int,
 	for y := drawStart; y < drawEnd; y++ {
 		d := y*256 - e.ScreenHeight*128 + lineHeight*128
 		texY := ((d * texture.Height) / lineHeight) / 256
-		texY = max(0, texY)
+		texY = int(max(0, float64(texY)))
 		if texY >= texture.Height {
 			texY = texture.Height - 1
 		}

@@ -16,142 +16,95 @@ func init() {
 }
 
 func Example() {
-	worldMap := [][]int{
-		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-		{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-		{1, 0, 2, 2, 2, 0, 0, 0, 3, 3, 0, 0, 0, 3, 3, 3, 0, 0, 2, 2, 0, 0, 0, 1},
-		{1, 0, 2, 0, 2, 0, 0, 0, 3, 0, 0, 0, 0, 3, 0, 3, 0, 0, 2, 0, 0, 0, 0, 1},
-		{1, 0, 2, 0, 2, 0, 0, 0, 3, 3, 0, 0, 0, 3, 3, 3, 0, 0, 2, 2, 0, 0, 0, 1},
-		{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-		{1, 0, 0, 3, 3, 3, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1},
-		{1, 0, 0, 3, 0, 3, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1},
-		{1, 0, 0, 3, 3, 3, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1},
-		{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-		{1, 2, 2, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1},
-		{1, 2, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1},
-		{1, 2, 2, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1},
-		{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-		{1, 3, 3, 3, 0, 0, 0, 2, 2, 2, 0, 0, 0, 3, 3, 3, 0, 0, 0, 2, 2, 2, 0, 1},
-		{1, 3, 0, 3, 0, 0, 0, 2, 0, 2, 0, 0, 0, 3, 0, 3, 0, 0, 0, 2, 0, 2, 0, 1},
-		{1, 3, 3, 3, 0, 0, 0, 2, 2, 2, 0, 0, 0, 3, 3, 3, 0, 0, 0, 2, 2, 2, 0, 1},
-		{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-	}
-
-	eng := engine.NewEngine(640, 480, len(worldMap), len(worldMap[0]), 120)
-
-	eng.SetWorldMap(worldMap)
-
-	eng.SetPlayer(
-		1.5, 1.5,
-		-1.0, 0.0,
-		0.0, 0.66,
-		0.05,
-		0.05,
-	)
-
-	if err := eng.Initialize(true); err != nil {
-		log.Fatalln(err)
-	}
-	defer eng.Cleanup()
-
-	// Load textures
-	_, err := eng.LoadFloorTexture("examples/floor.jpg", engine.TextureTypeJPEG)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	_, err = eng.LoadCeilingTexture("examples/ceiling.jpg", engine.TextureTypeJPEG)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	_, err = eng.LoadTexture("examples/wall.jpg", engine.TextureTypeJPEG)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	_, err = eng.LoadTexture("examples/wall2.jpg", engine.TextureTypeJPEG)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	_, err = eng.LoadTexture("examples/wall3.jpg", engine.TextureTypeJPEG)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	eng.EnableDebug()
-
-	// Load sprite textures
-	enemyTex, err := eng.LoadSpriteTexture("examples/pillar.jpg", engine.TextureTypeJPEG)
-	if err != nil {
-		log.Println("Warning: Could not load enemy sprite:", err)
-	} else {
-		// Create enemies
-		enemy1 := engine.NewEnemy(5.5, 5.5, enemyTex, 100, 0.8, 10)
-		eng.AddSprite(enemy1)
-
-		enemy2 := engine.NewEnemy(10.5, 10.5, enemyTex, 75, 1.0, 15)
-		eng.AddSprite(enemy2)
-
-		enemy3 := engine.NewEnemy(15.5, 8.5, enemyTex, 150, 0.6, 20)
-		eng.AddSprite(enemy3)
-	}
-
-	// Add decorative sprites
-	pillarTex, err := eng.LoadSpriteTexture("examples/pillar.jpg", engine.TextureTypeJPEG)
-	if err != nil {
-		log.Println("Warning: Could not load pillar sprite:", err)
-	} else {
-		pillar := engine.NewSprite(7.5, 7.5, pillarTex)
-		pillar.Scale = 1.5
-		eng.AddSprite(pillar)
-	}
-
-	// Add health pickup
-	itemTex, err := eng.LoadSpriteTexture("examples/pillar.jpg", engine.TextureTypeJPEG)
-	if err != nil {
-		log.Println("Warning: Could not load item sprite:", err)
-	} else {
-		healthPack := engine.NewItem(12.5, 5.5, itemTex)
-		eng.AddSprite(healthPack)
-	}
-
-	log.Println("=== CONTROLS ===")
-	log.Println("WASD - Move")
-	log.Println("Q/E - Rotate")
-	log.Println("SPACE - Shoot")
-	log.Println("SHIFT - Sprint")
-	log.Println("F3 - Toggle Debug")
-	log.Println("ESC - Quit")
-
-	lastTime := time.Now()
-
-	for eng.IsRunning() {
-		// Calculate delta time
-		currentTime := time.Now()
-		deltaTime := currentTime.Sub(lastTime).Seconds()
-		lastTime = currentTime
-
-		eng.UpdateDebugInfo()
-
-		// Update enemy AI
-		eng.UpdateEnemies(deltaTime)
-
-		// Handle player input
-		eng.HandleInput()
-
-		// Clean up dead enemies
-		eng.CleanupDeadEnemies()
-
-		// Render everything
-		eng.Render()
-
-		eng.DrawFrameBuffer()
-
-		eng.Window.SwapBuffers()
-		glfw.PollEvents()
-
-
-		time.Sleep(time.Duration(1000/eng.FPS))
-	}
+    worldMap := [][]int{
+        {1, 1, 1, 1, 1, 1, 1, 1},
+        {1, 0, 0, 0, 4, 0, 0, 1},  // 4 = door
+        {1, 0, 2, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 3, 0, 1},
+        {1, 0, 0, 0, 4, 0, 0, 1},  // Another door
+        {1, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 1},
+        {1, 1, 1, 1, 1, 1, 1, 1},
+    }
+    
+    eng := engine.NewEngine(640, 480, len(worldMap), len(worldMap[0]), 60)
+    eng.SetWorldMap(worldMap)
+    
+    // Create player
+    player := engine.NewPlayer(1.5, 1.5, -1.0, 0.0, 0.0, 0.66)
+    eng.SetPlayer(player)
+    
+    if err := eng.Initialize(true); err != nil {
+        log.Fatal(err)
+    }
+    defer eng.Cleanup()
+    
+    // Load textures
+    eng.LoadFloorTexture("assets/floor.jpg", engine.TextureTypeJPEG)
+    eng.LoadCeilingTexture("assets/ceiling.jpg", engine.TextureTypeJPEG)
+    eng.LoadTexture("assets/wall1.jpg", engine.TextureTypeJPEG)
+    eng.LoadTexture("assets/wall2.jpg", engine.TextureTypeJPEG)
+    eng.LoadTexture("assets/wall3.jpg", engine.TextureTypeJPEG)
+    eng.LoadTexture("assets/barrel.jpg", engine.TextureTypeJPEG)
+    
+    // Add doors
+    door1 := engine.NewDoor(4, 1, true, "red_key")
+    eng.AddDoor(door1)
+    
+    door2 := engine.NewDoor(4, 4, false, "")  // Unlocked
+    eng.AddDoor(door2)
+    
+    // Load sprite textures
+    enemyTex, _ := eng.LoadTexture("assets/enemy.png", engine.TextureTypePNG)
+    itemTex, _ := eng.LoadTexture("assets/item.png", engine.TextureTypePNG)
+    keyTex, _ := eng.LoadTexture("assets/key.png", engine.TextureTypePNG)
+    
+    // Add enemies
+    enemy1 := engine.NewEnemy(5.5, 5.5, enemyTex, 100, 0.8, 10)
+    eng.AddSprite(enemy1)
+    
+    // Add items
+    health := engine.NewHealthPickup(3.5, 3.5, itemTex, 25)
+    eng.AddSprite(health)
+    
+    ammo := engine.NewAmmoPickup(6.5, 2.5, itemTex, 30)
+    eng.AddSprite(ammo)
+    
+    key := engine.NewKeyPickup(2.5, 5.5, keyTex, "red_key")
+    eng.AddSprite(key)
+    
+    eng.EnableDebug()
+    
+    log.Println("=== CONTROLS ===")
+    log.Println("WASD - Move")
+    log.Println("Q/E - Rotate")
+    log.Println("SPACE - Shoot")
+    log.Println("R - Reload")
+    log.Println("F - Use/Open Door")
+    log.Println("M - Toggle Minimap")
+    log.Println("N - Change Minimap Corner")
+    log.Println("1/2/3 - Switch Weapon")
+    log.Println("SHIFT - Sprint")
+    log.Println("F3 - Toggle Debug")
+    
+    lastTime := time.Now()
+    
+    for eng.IsRunning() {
+        currentTime := time.Now()
+        deltaTime := currentTime.Sub(lastTime).Seconds()
+        lastTime = currentTime
+        
+        eng.UpdateDebugInfo()
+        eng.UpdateEnemies(deltaTime)
+        eng.UpdateDoors(deltaTime)
+        eng.HandleInput()
+        eng.Player.UpdateReload()
+        eng.CleanupDeadEnemies()
+        
+        eng.Render()
+        eng.DrawFrameBuffer()
+        
+        eng.Window.SwapBuffers()
+        glfw.PollEvents()
+    }
 }

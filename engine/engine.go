@@ -1,4 +1,3 @@
-// engine.go - Core engine structure and initialization
 package engine
 
 import (
@@ -11,57 +10,66 @@ import (
 )
 
 type Engine struct {
-	ScreenWidth   	 int
-	ScreenHeight  	 int
-	MapWidth      	 int
-	MapHeight     	 int
-	FPS           	 int
-	WorldMap      	 [][]int
-	Player         	 *Player
-	FrameBuffer   	 []byte
-	KeyState      	 map[glfw.Key]bool
-	Textures      	 []*Texture
-	FloorTexture  	 *Texture
-	CeilingTexture	 *Texture
-	Window        	 *glfw.Window
-	ScreenTexture 	 uint32
-	Sprites  	  	 []*Sprite
-	ZBuffer  	  	 []float64
-	Running       	 bool
-	Combat        	 *Combat
-	SprintMultiplier float64
-	DebugInfo        *DebugInfo
-	LastUpdateTime   time.Time
-	EnemyStates      map[*Sprite]*EnemyState
-}
-
-type Player struct {
-	PosX          float64
-	PosY          float64
-	DirX          float64
-	DirY          float64
-	PlaneX        float64
-	PlaneY        float64
-	MoveSpeed     float64
-	RotationSpeed float64
+	// Display
+	ScreenWidth   int
+	ScreenHeight  int
+	FrameBuffer   []byte
+	ScreenTexture uint32
+	Window        *glfw.Window
+	
+	// World
+	MapWidth      int
+	MapHeight     int
+	WorldMap      [][]int
+	
+	// Player
+	Player        *Player
+	
+	// Rendering
+	Textures      []*Texture
+	FloorTexture  *Texture
+	CeilingTexture *Texture
+	ZBuffer       []float64
+	
+	// Entities
+	Sprites       []*Sprite
+	Doors         []*Door
+	
+	// Input
+	KeyState      map[glfw.Key]bool
+	
+	// Game state
+	Running       bool
+	FPS           int
+	LastUpdateTime time.Time
+	
+	// Debug
+	DebugInfo     *DebugInfo
+	
+	// HUD
+	HitMarkerTime     time.Time
+	HitMarkerDuration time.Duration
+	MinimapEnabled    bool
+	MinimapCorner     int // 0=TL, 1=TR, 2=BR, 3=BL
 }
 
 func NewEngine(width, height, mapWidth, mapHeight, fps int) *Engine {
 	return &Engine{
-		ScreenWidth:  width,
-		ScreenHeight: height,
-		MapWidth:     mapWidth,
-		MapHeight:    mapHeight,
-		FPS:          fps,
-		KeyState:     make(map[glfw.Key]bool),
-		Textures:     make([]*Texture, 0),
-		Sprites:      make([]*Sprite, 0),   
-		ZBuffer:      make([]float64, width),
-		Running:      false,
-		SprintMultiplier: 2.0,
-		Combat:           NewCombat(),
-		LastUpdateTime:   time.Now(),
-		EnemyStates:      make(map[*Sprite]*EnemyState),
+		ScreenWidth:       width,
+		ScreenHeight:      height,
+		MapWidth:          mapWidth,
+		MapHeight:         mapHeight,
+		FPS:               fps,
+		KeyState:          make(map[glfw.Key]bool),
+		Textures:          make([]*Texture, 0),
+		Sprites:           make([]*Sprite, 0),
+		Doors:             make([]*Door, 0),
+		ZBuffer:           make([]float64, width),
+		Running:           false,
+		LastUpdateTime:    time.Now(),
+		HitMarkerDuration: time.Millisecond * 200,
+		MinimapEnabled:    true,
+		MinimapCorner:     1, // Top-right by default
 	}
 }
 
@@ -69,27 +77,18 @@ func (e *Engine) SetWorldMap(worldMap [][]int) {
 	e.WorldMap = worldMap
 }
 
-func (e *Engine) SetPlayer(posX, posY, dirX, dirY, planeX, planeY, moveSpeed, rotSpeed float64) {
-	e.Player = &Player{
-		PosX:          posX,
-		PosY:          posY,
-		DirX:          dirX,
-		DirY:          dirY,
-		PlaneX:        planeX,
-		PlaneY:        planeY,
-		MoveSpeed:     moveSpeed,
-		RotationSpeed: rotSpeed,
-	}
+func (e *Engine) SetPlayer(player *Player) {
+	e.Player = player
 }
 
 func (e *Engine) Initialize(fullscreen bool) error {
 	if err := glfw.Init(); err != nil {
 		return fmt.Errorf("failed to initialize glfw: %v", err)
 	}
-
+	
 	var window *glfw.Window
 	var err error
-
+	
 	if fullscreen {
 		monitor := glfw.GetPrimaryMonitor()
 		mode := monitor.GetVideoMode()
@@ -98,15 +97,15 @@ func (e *Engine) Initialize(fullscreen bool) error {
 	} else {
 		window, err = glfw.CreateWindow(e.ScreenWidth, e.ScreenHeight, "Raycaster Engine", nil, nil)
 	}
-
+	
 	if err != nil {
 		return fmt.Errorf("failed to create window: %v", err)
 	}
-
+	
 	e.Window = window
 	window.MakeContextCurrent()
 	window.SetKeyCallback(e.keyCallback)
-
+	
 	if err := gl.Init(); err != nil {
 		return fmt.Errorf("failed to initialize OpenGL: %v", err)
 	}
@@ -145,28 +144,6 @@ func (e *Engine) initScreenTexture() {
 		gl.UNSIGNED_BYTE,
 		gl.Ptr(e.FrameBuffer),
 	)
-}
-
-func (e *Engine) keyCallback(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-	switch action {
-	case glfw.Press:
-		e.KeyState[key] = true
-
-		if key == glfw.KeyF3 {
-			e.ToggleDebug()
-		}
-
-		if key == glfw.KeySpace {
-			e.PlayerShoot()
-		}
-	case glfw.Release:
-		e.KeyState[key] = false
-	}
-
-	if (key == glfw.KeyEscape && action == glfw.Press) || (key == glfw.KeyC && action == glfw.Press && (mods&glfw.ModControl) != 0) {
-		e.Running = false
-		w.SetShouldClose(true)
-	}
 }
 
 func (e *Engine) Cleanup() {
